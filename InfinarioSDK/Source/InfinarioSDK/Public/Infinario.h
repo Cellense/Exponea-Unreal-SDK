@@ -187,6 +187,7 @@ public:
 	 *Getters
 	 */
 
+public:
 	UFUNCTION( BlueprintCallable, Category = "Infinario" )
 	FORCEINLINE FString GetProjectToken( ) const
 	{
@@ -221,6 +222,10 @@ public:
 	{
 		return PlayerIdentity;
 	}
+
+	//===------------------------------------------------------------------===//
+	// Private
+	//===------------------------------------------------------------------===//
 
 private:
 	/** Stores Project token. Set by Initialize function. */
@@ -299,43 +304,3 @@ public:
 	UFUNCTION( BlueprintCallable, Category = "Infinario" )
 	void BP_CreateEveryCallPayload( const TMap< FString, FInfinarioData >& EveryCallPayloadToSet );
 };
-
-/*
-
- {
-	"commands": [
-		{
-			"name": "crm/events",
-			"data":
-			{
-				"project_id": "b9b54c06-3cbd-11e8-811d-b083fed3a8cb",
-				"type": "session_end",
-				"customer_ids":
-				{
-					"registered": "924"
-				},
-				"properties":
-				{
-					"player_name": "924",
-					"coins_balance": 9113,
-					"session_number": 31,
-					"time_in_game": 387,
-					"session_duration": 2,
-					"country": "en_US",
-					"dev": true,
-					"device_model": "GenuineIntel|Intel(R) Core(TM) i5-6600K CPU @ 3.50GHz",
-					"device_type": "GenuineIntel|Intel(R) Core(TM) i5-6600K CPU @ 3.50GHz",
-					"game_version": "clicker",
-					"os_name": "",
-					"os_version": "",
-					"CPU": 0,
-					"RAM": -1,
-					"Cores": 1,
-					"GPU_family": "GenericGPUBrand",
-					"GPU_version": "GenericGPUBrand"
-				}
-			}
-		}
-	]
-}
-*/
