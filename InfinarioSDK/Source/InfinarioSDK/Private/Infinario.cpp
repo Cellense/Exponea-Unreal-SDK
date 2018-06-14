@@ -6,7 +6,8 @@
 #include <SharedPointer.h>
 #include "InfinarioSDK.h"
 #include <JsonObject.h>
-#include "Private/InfinarioDataTypes.h"
+#include "InfinarioDataTypes.h"
+#include "Private/InfinarioDefaults.h"
 
 UInfinario* UInfinario::Instance;
 
