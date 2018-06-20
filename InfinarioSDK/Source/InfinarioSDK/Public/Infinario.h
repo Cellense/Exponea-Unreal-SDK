@@ -16,8 +16,6 @@
 class FHttpModule;
 class FJsonObject;
 
-
-
 UCLASS( BlueprintType, Blueprintable ) class INFINARIOSDK_API UInfinario : public UObject
 {
 	GENERATED_BODY( )
@@ -46,13 +44,13 @@ public:
 	void Identify( const FString& PlayerIdentityToSet );
 
 	/** Main tracking event */
-	void Track( const FString ActionName, const TMap< FString, FInfinarioData >& Payload );
+	void Track( const FString ActionName, const TMap< FString, FInfinarioData >& Payload, const float TimeStamp = -1.0f );
 
 	/** Shortcut to track Session Start event */
-	void TrackSessionStart( const TMap< FString, FInfinarioData >& Payload );
+	void TrackSessionStart( TMap< FString, FInfinarioData >& Payload );
 
 	/** Shortcut to track Session End event */
-	void TrackSessionEnd( const TMap< FString, FInfinarioData >& Payload );
+	void TrackSessionEnd( TMap< FString, FInfinarioData >& Payload );
 
 	/** Shortcut to track Virtual Payment event */
 	void TrackVirtualPayment( const FVirtualPayment& VirtualPaymentData );
@@ -144,7 +142,11 @@ private:
 		return outputString;
 	}
 
-	void FillProperties( const TMap< FString, FInfinarioData > PayloadToParse, TSharedRef< FJsonObject > OutProperties );
+	/** Helper function */
+	void FillProperties( const TMap< FString, FInfinarioData >& PayloadToParse, TSharedRef< FJsonObject > OutProperties );
+
+	/** Returns map of HW specifications for the active platform */
+	TMap< FString, FInfinarioData > GetHWPayload( );
 
 	//===------------------------------------------------------------------===//
 	// BP library
@@ -155,7 +157,7 @@ public:
 	void BP_Initialize( const FString& ProjectTokenToSet, const FString& AppVersionToSet, const FString& TargetToSet );
 
 	UFUNCTION( BlueprintCallable, Category = "Infinario" )
-	void BP_Track( const FString ActionName, const TMap< FString, FInfinarioData >& Payload );
+	void BP_Track( const FString ActionName, const TMap< FString, FInfinarioData >& Payload, const float TimeStamp = -1.0f );
 
 	UFUNCTION( BlueprintCallable, Category = "Infinario" )
 	FInfinarioData BP_SetIntValue( const int32 Value ) const;
@@ -173,10 +175,10 @@ public:
 	void BP_Identify( const FString& PlayerIdentityToSet );
 
 	UFUNCTION( BlueprintCallable, Category = "Infinario" )
-	void BP_Track_SessionStart( const TMap< FString, FInfinarioData >& Payload );
+	void BP_Track_SessionStart( TMap< FString, FInfinarioData > Payload );
 
 	UFUNCTION( BlueprintCallable, Category = "Infinario" )
-	void BP_Track_SessionEnd( const TMap< FString, FInfinarioData >& Payload );
+	void BP_Track_SessionEnd( TMap< FString, FInfinarioData > Payload );
 
 	UFUNCTION( BlueprintCallable, Category = "Infinario" )
 	void BP_Track_VirtualPayment( const FVirtualPayment& VirtualPaymentData );

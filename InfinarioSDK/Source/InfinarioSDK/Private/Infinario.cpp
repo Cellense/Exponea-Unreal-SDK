@@ -8,6 +8,8 @@
 #include <JsonObject.h>
 #include "InfinarioDataTypes.h"
 #include "Private/InfinarioDefaults.h"
+#include "HAL/PlatformMisc.h"
+#include "Private/HardwareSpec.h"
 
 UInfinario* UInfinario::Instance;
 
@@ -54,7 +56,7 @@ void UInfinario::Identify( const FString& PlayerIdentityToSet )
 	PlayerIdentity = PlayerIdentityToSet.IsEmpty( ) ? DEFAULT_PLAYER_IDENTITY : PlayerIdentityToSet;
 }
 
-void UInfinario::Track( const FString ActionName, const TMap< FString, FInfinarioData >& Payload )
+void UInfinario::Track( const FString ActionName, const TMap< FString, FInfinarioData >& Payload, const float TimeStamp /*= -1.0f */ )
 {
 	//	https://forums.unrealengine.com/development-discussion/c-gameplay-programming/121818-need-help-to-get-json-with-cpp
 	//	http://www.wraiyth.com/?p=198
@@ -90,6 +92,12 @@ void UInfinario::Track( const FString ActionName, const TMap< FString, FInfinari
 		FillProperties( EveryCallPayload, properties.ToSharedRef( ) );
 	}
 
+	/** Append custom user timestamp if present. */
+	if( TimeStamp > 0.0f )
+	{
+		properties->SetNumberField( PROPERTY_TIMESTAMP, TimeStamp );
+	}
+
 	commands->SetObjectField( "data", data );
 
 	//////////////////////////////////////////////////////////////////////////
@@ -103,13 +111,15 @@ void UInfinario::Track( const FString ActionName, const TMap< FString, FInfinari
 	DoRequest( payloadToSend.ToSharedRef( ) );
 }
 
-void UInfinario::TrackSessionStart( const TMap< FString, FInfinarioData >& Payload )
+void UInfinario::TrackSessionStart( TMap< FString, FInfinarioData >& Payload )
 {
+	Payload.Append( GetHWPayload( ) );
 	Track( EVENT_SESSION_START, Payload );
 }
 
-void UInfinario::TrackSessionEnd( const TMap< FString, FInfinarioData >& Payload )
+void UInfinario::TrackSessionEnd( TMap< FString, FInfinarioData >& Payload )
 {
+	Payload.Append( GetHWPayload( ) );
 	Track( EVENT_SESSION_END, Payload );
 }
 
@@ -124,9 +134,9 @@ void UInfinario::BP_Initialize( const FString& ProjectTokenToSet, const FString&
 	Initialize( ProjectTokenToSet, AppVersionToSet, TargetToSet );
 }
 
-void UInfinario::BP_Track( const FString ActionName, const TMap< FString, FInfinarioData >& Payload )
+void UInfinario::BP_Track( const FString ActionName, const TMap< FString, FInfinarioData >& Payload, const float TimeStamp /* = -1.0f*/ )
 {
-	Track( ActionName, Payload );
+	Track( ActionName, Payload, TimeStamp );
 }
 
 FInfinarioData UInfinario::BP_SetFloatValue( const float Value ) const
@@ -154,12 +164,12 @@ void UInfinario::BP_Identify( const FString& PlayerIdentityToSet )
 	Identify( PlayerIdentityToSet );
 }
 
-void UInfinario::BP_Track_SessionStart( const TMap< FString, FInfinarioData >& Payload )
+void UInfinario::BP_Track_SessionStart( TMap< FString, FInfinarioData > Payload )
 {
 	TrackSessionStart( Payload );
 }
 
-void UInfinario::BP_Track_SessionEnd( const TMap< FString, FInfinarioData >& Payload )
+void UInfinario::BP_Track_SessionEnd( TMap< FString, FInfinarioData > Payload )
 {
 	TrackSessionEnd( Payload );
 }
@@ -206,7 +216,7 @@ void UInfinario::OnResponseReceived( FHttpRequestPtr Request, FHttpResponsePtr R
 	INF_LOG( TEXT( "Response from server" ), Response->GetContentAsString( ) )
 }
 
-void UInfinario::FillProperties( const TMap< FString, FInfinarioData > PayloadToParse, TSharedRef< FJsonObject > OutProperties )
+void UInfinario::FillProperties( const TMap< FString, FInfinarioData >& PayloadToParse, TSharedRef< FJsonObject > OutProperties )
 {
 	for( auto item : PayloadToParse )
 	{
@@ -234,6 +244,46 @@ void UInfinario::FillProperties( const TMap< FString, FInfinarioData > PayloadTo
 	}
 }
 
+
+TMap< FString, FInfinarioData > UInfinario::GetHWPayload( )
+{
+
+#if PLATFORM_ANDROID
+
+	FHardwareDataAndroid data;
+	data.SetbDev( UE_BUILD_DEVELOPMENT );
+	data.SetDeviceModel( FAndroidMisc::DeviceModel );
+	data.SetDeviceType( FAndroidMisc::DeviceMake );   // FAndroidMisc::GetDeviceId( );   // ?
+	data.SetOSName( TEXT( "Android" ) );
+	data.SetOSVersion( FAndroidMisc::GetOSVersion( ) );
+	data.SetGPUFamily( FAndroidMisc::GetGPUFamily( ) );
+	data.SetGPUVersion( FAndroidMisc::GetGLVersion( ) );
+
+#elif PLATFORM_IOS
+
+	// #todo
+
+#elif PLATFORM_WINDOWS
+
+	FHardwareDataPC data;
+	data.SetbDev( UE_BUILD_DEVELOPMENT );
+	data.SetDeviceModel( FGenericPlatformMisc::GetDeviceMakeAndModel( ) );
+	data.SetDeviceType( FGenericPlatformMisc::GetDeviceMakeAndModel( ) );
+	data.SetOSName( TEXT( "Windows" ) );
+	data.SetOSVersion( FGenericPlatformMisc::GetOSVersion( ) );
+	data.SetGPUVersion( FGenericPlatformMisc::GetPrimaryGPUBrand( ) );
+	data.SetGPUFamily( FGenericPlatformMisc::GetPrimaryGPUBrand( ) );
+	data.SetCores( FGenericPlatformMisc::NumberOfCores( ) );
+	data.SetCPU( FGenericPlatformMisc::GetCPUVendor( ) );
+
+#elif PLATFORM_MAC
+
+	// #todo
+
+#endif
+
+	return data.GetHWPayload( );
+}
 void UInfinario::CreateEveryCallPayload( const TMap< FString, FInfinarioData >& EveryCallPayloadToSet )
 {
 	UE_LOG( LogTemp, Warning, TEXT( "Address of to Set is %d" ), &EveryCallPayloadToSet );
