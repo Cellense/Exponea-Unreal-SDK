@@ -10,6 +10,9 @@
 #include "Private/InfinarioDefaults.h"
 #include "HAL/PlatformMisc.h"
 #include "Private/HardwareSpec.h"
+#include <Regex.h>
+#include "InfinarioSaveObject.h"
+#include "Kismet/GameplayStatics.h"
 
 UInfinario* UInfinario::Instance;
 
@@ -18,6 +21,7 @@ UInfinario::UInfinario( )
 	// When the object is constructed, Get the HTTP module
 	Http = &FHttpModule::Get( );
 }
+
 
 UInfinario* UInfinario::GetInstance( UObject* WorldContext )
 {
@@ -29,16 +33,28 @@ UInfinario* UInfinario::GetInstance( UObject* WorldContext )
 	return Instance;
 }
 
-void UInfinario::Initialize( const FString& ProjectTokenToSet, const FString& AppVersionToSet /*= TEXT( "" )*/, const FString& TargetToSet /*= TEXT( "" ) */ )
+void UInfinario::Initialize( const FString& ProjectTokenToSet, const FString& TargetToSet /*= TEXT( "" ) */, const FString& AppVersionToSet /*= TEXT( "" )*/ )
 {
 	INF_LOG_L( TEXT( "Initialization started." ) )
 
 	ProjectToken = ProjectTokenToSet;
 	AppVersion   = AppVersionToSet;
-	Target		 = TargetToSet;
 
-	/** Set default name for player */
-	Identify( DEFAULT_PLAYER_IDENTITY );
+	// #todo handle validity of users url
+	if( TargetToSet.IsEmpty( ) )
+	{
+		Target = FString( DEFAULT_TARGET ) + FString( BULK_URL );
+	}
+	else
+	{
+		Target = FString( TargetToSet ) + FString( BULK_URL );
+	}
+
+	INF_LOG( TEXT( "Target URL is" ), Target )
+
+	/** Identify player with loaded uuid. Will create new uuid if necessary. */
+	// Identify( LoadUUID( ) );
+	Identify( UInfinarioPersistencyManager::LoadUUID( ) );
 
 	bIsInitialized = true;
 	INF_LOG_L( TEXT( "Initialization completed." ) )
@@ -46,23 +62,18 @@ void UInfinario::Initialize( const FString& ProjectTokenToSet, const FString& Ap
 
 void UInfinario::Identify( const FString& PlayerIdentityToSet )
 {
-	/** Do not set if the user fill the same name */
-	if( PlayerIdentityToSet.Equals( PlayerIdentity ) )
-	{
-		return;
-	}
-
-	/** Assign default name if empty */
-	PlayerIdentity = PlayerIdentityToSet.IsEmpty( ) ? DEFAULT_PLAYER_IDENTITY : PlayerIdentityToSet;
+	PlayerIdentity = PlayerIdentityToSet.IsEmpty( ) ? GenerateUUID( ) : PlayerIdentityToSet;
+	// SaveUUID( PlayerIdentity );
+	UInfinarioPersistencyManager::SaveUUID( PlayerIdentity );
 }
 
-void UInfinario::Track( const FString ActionName, const TMap< FString, FInfinarioData >& Payload, const float TimeStamp /*= -1.0f */ )
+void UInfinario::Track( const FString& ActionName, const TMap< FString, FInfinarioData >& Payload, const float TimeStamp /*= -1.0f */ )
 {
 	//	https://forums.unrealengine.com/development-discussion/c-gameplay-programming/121818-need-help-to-get-json-with-cpp
 	//	http://www.wraiyth.com/?p=198
 	//	https://answers.unrealengine.com/questions/341767/how-to-add-an-array-of-json-objects-to-a-json-obje.html
 
-	/** Do not execute when plugin is not initialized */
+	/** Do not execute if plugin is not initialized */
 	if( !GetIsInitialized( ) )
 	{
 		return;
@@ -195,7 +206,7 @@ bool UInfinario::DoRequest( TSharedRef< FJsonObject > Payload )
 
 	// This is the url on which to process the request
 
-	Request->SetURL( "api.infinario.com/bulk" );   // #todo Replace?
+	Request->SetURL( GetTarget( ) );
 	Request->SetVerb( "POST" );
 	Request->SetHeader( TEXT( "User-Agent" ), "X-UnrealEngine-Agent" );
 	Request->SetHeader( "Content-Type", TEXT( "application/json" ) );
@@ -207,7 +218,13 @@ bool UInfinario::DoRequest( TSharedRef< FJsonObject > Payload )
 
 void UInfinario::OnResponseReceived( FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful )
 {
-	// Create a pointer to hold the json serialized data
+	if( !Response.IsValid( ) )
+	{
+		INF_LOG_C( TEXT( "No response received. Please check the target API" ), Error, Target );
+		return;
+	}
+
+	// Create a pointer to point to the json serialized data
 	TSharedPtr< FJsonObject > JsonObject;
 
 	// Create a reader pointer to read the json data
@@ -243,7 +260,6 @@ void UInfinario::FillProperties( const TMap< FString, FInfinarioData >& PayloadT
 		}
 	}
 }
-
 
 TMap< FString, FInfinarioData > UInfinario::GetHWPayload( )
 {
@@ -284,11 +300,17 @@ TMap< FString, FInfinarioData > UInfinario::GetHWPayload( )
 
 	return data.GetHWPayload( );
 }
+
 void UInfinario::CreateEveryCallPayload( const TMap< FString, FInfinarioData >& EveryCallPayloadToSet )
 {
-	UE_LOG( LogTemp, Warning, TEXT( "Address of to Set is %d" ), &EveryCallPayloadToSet );
 	EveryCallPayload = EveryCallPayloadToSet;
-	UE_LOG( LogTemp, Warning, TEXT( "Address of to every call property is is %d" ), &EveryCallPayload );
+}
+
+FString UInfinario::GenerateUUID( )
+{
+	FGuid guid = FGuid::NewGuid( );
+	INF_LOG( TEXT( "New UUID generated" ), guid.ToString( ) );
+	return guid.ToString( );
 }
 
 UInfinario::~UInfinario( )

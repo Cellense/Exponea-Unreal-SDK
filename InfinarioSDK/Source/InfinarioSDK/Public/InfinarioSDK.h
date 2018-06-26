@@ -9,8 +9,10 @@
 DECLARE_LOG_CATEGORY_EXTERN(LogInfinario, All, All);
 
 #define INF_LOG(_DESC_, _TEXT_) { UE_LOG( LogInfinario, Log, TEXT( "%s : %s" ), _DESC_, *(_TEXT_) ); }
+#define INF_LOG_C(_DESC_, _VERBOSITY_, _TEXT_) { UE_LOG( LogInfinario, _VERBOSITY_, TEXT( "%s : %s" ), _DESC_, *(_TEXT_) ); }
 #define INF_LOG_L( _DESC_ ) UE_LOG( LogInfinario, Log, TEXT( "%s" ), _DESC_ );
-#define INF_LOG_W( _DESC_ )  UE_LOG( LogInfinario, Warning, TEXT( "%s" ), _DESC_ );
+#define INF_LOG_W( _DESC_ ) UE_LOG( LogInfinario, Warning, TEXT( "%s" ), _DESC_ );
+#define INF_LOG_E( _DESC_ ) UE_LOG( LogInfinario, Error, TEXT( "%s" ), _DESC_ );
 
 class FInfinarioSDKModule : public IModuleInterface
 {

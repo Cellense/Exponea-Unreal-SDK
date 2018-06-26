@@ -68,3 +68,11 @@ const FString BULK_URL		 = TEXT( "/bulk" );
 
 const FString ENDPOINT_UPDATE = "crm/customers";
 const FString ENDPOINT_TRACK  = "crm/events";
+
+
+/**
+ * Saving
+ */
+
+const FString SAVE_SLOT_NAME = TEXT( "UUID" );
+const int32   SAVE_SLOT_IDX  = 1;

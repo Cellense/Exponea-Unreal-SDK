@@ -17,7 +17,9 @@
     {
       "Name": "InfinarioSDK",
       "Type": "Runtime",
-      "LoadingPhase": "Default"
+      "LoadingPhase": "Default",
+      "WhitelistPlatforms": [ "Windows" ],
+      "BlacklistPlatforms": [ "iOS", "MAC", "Android", "HTML5", "Linux" ]
     }
   ]
 }

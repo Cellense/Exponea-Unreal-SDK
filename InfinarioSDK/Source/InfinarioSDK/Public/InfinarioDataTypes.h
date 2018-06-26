@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Private/InfinarioDefaults.h"
+#include "GameFramework/SaveGame.h"
 #include "InfinarioDataTypes.generated.h"
 
 UENUM( BlueprintType, Blueprintable )
@@ -126,5 +127,3 @@ struct FVirtualPayment
 		return VirtualCurrencyData;
 	}
 };
-
-
