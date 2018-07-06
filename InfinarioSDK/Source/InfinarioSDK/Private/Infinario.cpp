@@ -40,7 +40,7 @@ void UInfinario::Initialize( const FString& ProjectTokenToSet, const FString& Ta
 	ProjectToken = ProjectTokenToSet;
 	AppVersion   = AppVersionToSet;
 
-	// #todo handle validity of users url
+	// #todo handle validity of user url
 	if( TargetToSet.IsEmpty( ) )
 	{
 		Target = FString( DEFAULT_TARGET ) + FString( BULK_URL );
@@ -53,7 +53,6 @@ void UInfinario::Initialize( const FString& ProjectTokenToSet, const FString& Ta
 	INF_LOG( TEXT( "Target URL is" ), Target )
 
 	/** Identify player with loaded uuid. Will create new uuid if necessary. */
-	// Identify( LoadUUID( ) );
 	Identify( UInfinarioPersistencyManager::LoadUUID( ) );
 
 	bIsInitialized = true;
@@ -63,16 +62,11 @@ void UInfinario::Initialize( const FString& ProjectTokenToSet, const FString& Ta
 void UInfinario::Identify( const FString& PlayerIdentityToSet )
 {
 	PlayerIdentity = PlayerIdentityToSet.IsEmpty( ) ? GenerateUUID( ) : PlayerIdentityToSet;
-	// SaveUUID( PlayerIdentity );
 	UInfinarioPersistencyManager::SaveUUID( PlayerIdentity );
 }
 
 void UInfinario::Track( const FString& ActionName, const TMap< FString, FInfinarioData >& Payload, const float TimeStamp /*= -1.0f */ )
 {
-	//	https://forums.unrealengine.com/development-discussion/c-gameplay-programming/121818-need-help-to-get-json-with-cpp
-	//	http://www.wraiyth.com/?p=198
-	//	https://answers.unrealengine.com/questions/341767/how-to-add-an-array-of-json-objects-to-a-json-obje.html
-
 	/** Do not execute if plugin is not initialized */
 	if( !GetIsInitialized( ) )
 	{
@@ -97,13 +91,13 @@ void UInfinario::Track( const FString& ActionName, const TMap< FString, FInfinar
 	/** Fill tracking payload */
 	FillProperties( Payload, properties.ToSharedRef( ) );
 
-	/** Fill every call data if present. */
+	/** Fill every call data if exists. */
 	if( EveryCallPayload.Num( ) > 0 )
 	{
 		FillProperties( EveryCallPayload, properties.ToSharedRef( ) );
 	}
 
-	/** Append custom user timestamp if present. */
+	/** Append custom user timestamp if exists. */
 	if( TimeStamp > 0.0f )
 	{
 		properties->SetNumberField( PROPERTY_TIMESTAMP, TimeStamp );
@@ -140,9 +134,9 @@ void UInfinario::TrackVirtualPayment( const FVirtualPayment& VirtualPaymentData 
 	Track( EVENT_VIRTUAL_PAYMENT, payload );
 }
 
-void UInfinario::BP_Initialize( const FString& ProjectTokenToSet, const FString& AppVersionToSet, const FString& TargetToSet )
+void UInfinario::BP_Initialize( const FString& ProjectTokenToSet, const FString& TargetToSet, const FString& AppVersionToSet )
 {
-	Initialize( ProjectTokenToSet, AppVersionToSet, TargetToSet );
+	Initialize( ProjectTokenToSet, TargetToSet, AppVersionToSet );
 }
 
 void UInfinario::BP_Track( const FString ActionName, const TMap< FString, FInfinarioData >& Payload, const float TimeStamp /* = -1.0f*/ )

@@ -156,7 +156,8 @@ private:
 	//===------------------------------------------------------------------===//
 
 public:
-	UFUNCTION( BlueprintCallable, Category = "Infinario" ) void BP_Initialize( const FString& ProjectTokenToSet, const FString& AppVersionToSet, const FString& TargetToSet );
+	UFUNCTION( BlueprintCallable, Category = "Infinario" )
+	void BP_Initialize( const FString& ProjectTokenToSet, const FString& TargetToSet, const FString& AppVersionToSet );
 
 	UFUNCTION( BlueprintCallable, Category = "Infinario" )
 	void BP_Track( const FString ActionName, const TMap< FString, FInfinarioData >& Payload, const float TimeStamp = -1.0f );
@@ -188,5 +189,3 @@ public:
 	UFUNCTION( BlueprintCallable, Category = "Infinario" )
 	void BP_CreateEveryCallPayload( const TMap< FString, FInfinarioData >& EveryCallPayloadToSet );
 };
-
-
