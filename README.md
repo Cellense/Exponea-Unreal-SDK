@@ -28,6 +28,16 @@
 
 ## Usage
 
+### Workflow
+
+The basic principle is to create one instance of the Infinario object and store the variable in well accessible place - for instance in the GameMode. After initialization you can use that object for all possilble actions like tracking, player identifying, etc...
+
+## C++
+
+### Prepare your project
+
+First of all, you need to modify `[YourProject].Build.cs` file. Add `InfinarioSDK` to `PrivateDependencyModuleNames`
+
 ### Plugin initialization
 
 ```
@@ -53,20 +63,29 @@ void AMyGameModeBase::BeginPlay( )
     {
 		return;
 	}
-
-	/** Initialize with given project token */
-    Inf->Initialize( Token );
+    
+    /** Initialize with a given token amd custom target API */
+    Inf->Initialize( Token, TEXT( "api.infinario.com" ) );
 }
 ```
 
 ### Identifying Players
 
+To control the identity of the current player use the Identify method. By calling
+
 ```
-/** Initialize with a given token */
+/** Identify player. */
 Inf->Identify( FString( TEXT( "C++ Player" ) ) );
 ```
+you can register a new player in Infinario. All events you track by the Track method from now on will belong to this player. To switch to an existing player, simply call Identify with his name. You can switch the identity of the current player as many times as you need to.
+
+### Anonymous Players
+
+Up until you call Identify for the first time, all tracked events belong to an anonymous player (internally identified with a randomly generated uuid). /*Once you call Identify, the previously anonymous player is automatically merged with the newly identified player. - In progress*/
 
 ### Infinario Data
+
+User tracking utilizes custom data structure `FInfinarioData`. You can create payload for basic data types like this:
 
 ```
 /** Create sample payload */
@@ -87,10 +106,11 @@ Inf->CreateEveryCallPayload( EveryCallData );
 
 ### Basic Tracking
 
-To start tracking, you need to know your projectToken. To initialize the tracking, simply get an instance of the Infinario class and call just once Initialize:
+At this moment you should have initialized plugin and prepared data for the event. For basic tracking, you call:
 ```
 Inf->Track( "my_event", TestData );
 ```
+to track *my_event* with *TestData*.
 
 ### Tracking Session Start and Session End Events
 
@@ -110,20 +130,15 @@ FVirtualPayment VirtualPaymentData = FVirtualPayment( FInfinarioData( TEXT( "Gol
 Inf->TrackVirtualPayment( VirtualPaymentData );
 ```
 
+## Blueprints
 
-### C++
+Tracking in Blueprints is as easy as tracking in C++. 
 
-First of all, you need to modify `[YourProject].Build.cs` file. Add `InfinarioSDK` to `PrivateDependencyModuleNames`
-
-
-### Blueprints
-
+![Alt text](HowTo/bp_howto.png?raw=true "bp")
 
 ## Sample project
 
-Please refer to sample project if something is not clear enough.
-
-
+Please refer to sample project if something is not clear enough [Exponea-Unreal-Demo-Game](https://github.com/Cellense/Exponea-Unreal-Demo-Game)
 
 ## Final Remarks
 
