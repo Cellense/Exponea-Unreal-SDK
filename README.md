@@ -1,6 +1,6 @@
-# Getting started with Infinario Unreal Engine SDK (in 5 minutes)
+# Getting started with Exponea  Unreal Engine SDK (in 5 minutes)
 
- Infinario UE4 SDK is available in this Git repository :https://github.com/Cellense/Exponea-Unreal-SDK. It provides tracking capabilities for your application. All functionality is expoed for C++ and Blueprints.
+ Exponea UE4 SDK is available in this Git repository :https://github.com/Cellense/Exponea-Unreal-SDK. It provides tracking capabilities for your application. All functionality is expoed for C++ and Blueprints.
  
  > Note: The plugin is not compiled at the moment and it's not possible to use it within your pure Blueprint project. Compiled version is coming soon.
 
